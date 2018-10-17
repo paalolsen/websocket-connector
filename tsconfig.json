@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "outDir": "es6",
+    "module": "es2015",
+    "target": "es5",
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "alwaysStrict": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "lib": ["dom", "es5", "es2017"],
+    "esModuleInterop": true
+  },
+  "include": [
+    "./src/**/*"
+  ]
+}
