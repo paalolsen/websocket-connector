@@ -38,7 +38,80 @@ closeWebSocket();
 
 ````
 
+### React Wrapper Example
+This can be seated at Root.jsx as a common service, and then use the regular javascript functions to subscribe, unsubscribe, send messages +++ where needed
+
+````
+import * as React from 'react';
+import {closeWebSocket, connectWebSocket, statusWebSocket} from 'websockets'
+
+// Consider adding a Prop funtion to pass inn, and handle message outside component
+interface Props {
+  reconnect: boolean;
+  // getMessage: (message: string, topic: string) => void; 
+}
+
+class WebSocket extends React.Component<Props> {
+  constructor(props:Props) {
+    super();
+  }
+
+  componentDidMount() {
+
+    this.connectToWebSocket()
+
+    setTimeout(() => {
+      this.checkIsConnected();
+    }, 5000)
+
+  }
+  componentWillUnmount() {
+    closeWebSocket();
+  }
+
+  checkIsConnected = () => {
+    const {reconnect} = this.props;
+    if(reconnect) {
+      setInterval(() => {
+       if(!statusWebSocket()) {
+         this.connectToWebSocket();
+       }
+      }, 5000);
+    }
+  }
+
+  getMessage = (message: string, topic: string) => {
+    // Hanlde message here, or expand Props to take a similiar function and handle outside component
+  }
+
+  connectToWebSocket = () => {
+    console.log('Lytter på topics: /topic/general/info, /topic/general/error');
+    connectWebSocket('/gpf-handelslager/handler', ['/topic/general/info', '/topic/general/error'], this.getMessage)
+      .then(() => { /* Inform Connection OK */ })
+      .catch(()=> { /* Inform Connection Failed*/ })
+  }
+
+  render() {
+    return ( <div />)
+  }
+
+}
+
+export default WebSocket;
+
+````
+
 ## Example Spring Boot backend
+
+First add dependency to maven:
+````
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+            <version>RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
+````
 
 ### Create a config for broker
 ````
