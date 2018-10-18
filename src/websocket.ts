@@ -125,7 +125,7 @@ export const subscribeTopic = (topic: string, callbackMessage: any) => {
   if (stompClient) {
     let subscriptionID: string = stompClient.subscribe(topic, (frame: Frame) => {
       const body = JSON.parse(frame.body);
-      const message = body.message;
+      const message = body;
       const topic = body.topic;
 
       callbackMessage(message, topic);
