@@ -244,9 +244,9 @@ public class Testings {
      public void doSomething() {
          
          // A) send message
-         webSocketClient.messageTopic('Sometext', '/topic/general');
+         webSocketClient.messageTopic('Sometext', '/topic/general/info');
          // B) send message with data/object
-         webSocketClient.messageTopic('Sometext', '/topic/general', new SomePojo('value1','value2'));
+         webSocketClient.messageTopic('Sometext', '/topic/general/info', new SomePojo('value1','value2'));
          
          // Or use postMessage(WebSocketMessage message) directly
      }
