@@ -1,7 +1,7 @@
 import * as Stomp from 'stompjs';
-import { Client, Frame } from 'stompjs';
+import { Client, Frame } from 'stompjs'; // tslint:disable-line
 
-const SockJS = require('sockjs-client');
+const SockJS = require('sockjs-client'); // tslint:disable-line
 
 /**
  * WebSocket: send and receive messages using sockjs-client and stompjs
@@ -38,10 +38,10 @@ const SockJS = require('sockjs-client');
  *      webSocketUnsubscribeTopic(["/topic/testing"]);
  */
 
-let socket: any | undefined = undefined;
-let stompClient: Client | undefined = undefined;
+let socket: any | undefined = undefined; // tslint:disable-line
+let stompClient: Client | undefined = undefined; // tslint:disable-line
 
-let subscriptions: Map<string, string> = new Map<string, string>();
+let subscriptions: Map<string, string> = new Map<string, string>(); // tslint:disable-line
 
 let debugFlag: boolean = false;
 
@@ -56,7 +56,7 @@ let debugFlag: boolean = false;
  * @return {Promise}
  * @
  */
-export const webSocketConnect = (url: string, topics: Array<string>, callbackMessage: any, debug: boolean = false) => {
+export const webSocketConnect = (url: string, topics: string[], callbackMessage: any, debug: boolean = false) => {
   debugFlag = debug;
 
   return new Promise((resolve, reject) => {
@@ -66,7 +66,7 @@ export const webSocketConnect = (url: string, topics: Array<string>, callbackMes
       stompClient = Stomp.over(socket);
 
       if (!debugFlag) {
-        stompClient.debug = () => {};
+        stompClient.debug = () => {}; // tslint:disable-line
       }
       stompClient.connect(
         {},
@@ -110,7 +110,7 @@ export const webSocketStatus = (): boolean => {
  * @param {Array<string} topics       Example: ['/topic/status'] or ['/topic/status', '/topic/error']
  * @param {callback} callbackMessage  Example:  (message: string, topic: string) => {...handle}
  */
-export const webSocketSubscribeTopics = (topics: Array<string>, callbackMessage: any) => {
+export const webSocketSubscribeTopics = (topics: string[], callbackMessage: any) => {
   topics.forEach(topic => {
     webSocketSubscribeTopic(topic, callbackMessage);
   });
@@ -126,10 +126,8 @@ export const webSocketSubscribeTopic = (topic: string, callbackMessage: any) => 
   if (stompClient) {
     const subscriptionID: string = stompClient.subscribe(topic, (frame: Frame) => {
       const body = JSON.parse(frame.body);
-      const message = body;
-      const topic = body.topic;
 
-      callbackMessage(message, topic);
+      callbackMessage(body, body.topic);
     }).id;
     subscriptions.set(topic, subscriptionID);
     log(`WebSocket: Subscribed to topic ${topic}`, true);

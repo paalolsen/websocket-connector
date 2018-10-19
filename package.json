@@ -22,19 +22,21 @@
     "registry": "http://nexus/content/repositories/npm-releases/"
   },
   "devDependencies": {
-    "@types/sockjs-client": "^1.1.0",
-    "@types/stompjs": "^2.3.4",
     "prettier": "1.14.2",
     "react": "^16.5.2",
     "rimraf": "2.6.2",
-    "sockjs-client": "^1.3.0",
-    "stompjs": "^2.3.3",
     "tslint": "5.9.1",
     "tslint-config-prettier": "1.10.0",
     "tslint-loader": "3.6.0",
     "tslint-react": "3.5.1",
     "typescript": "3.0.3",
     "typescript-eslint-parser": "18.0.0"
+  },
+  "dependencies": {
+    "@types/sockjs-client": "^1.1.0",
+    "@types/stompjs": "^2.3.4",
+    "sockjs-client": "^1.3.0",
+    "stompjs": "^2.3.3"
   },
   "author": "Pål Olsen",
   "jest": {
