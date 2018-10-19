@@ -1,7 +1,7 @@
 import * as Stomp from 'stompjs';
-import {Client, Frame} from 'stompjs';
+import { Client, Frame } from 'stompjs';
 
-const SockJS = require('sockjs-client')
+const SockJS = require('sockjs-client');
 
 /**
  * WebSocket: send and receive messages using sockjs-client and stompjs
@@ -57,7 +57,6 @@ let debugFlag: boolean = false;
  * @
  */
 export const webSocketConnect = (url: string, topics: Array<string>, callbackMessage: any, debug: boolean = false) => {
-
   debugFlag = debug;
 
   return new Promise((resolve, reject) => {
@@ -67,21 +66,23 @@ export const webSocketConnect = (url: string, topics: Array<string>, callbackMes
       stompClient = Stomp.over(socket);
 
       if (!debugFlag) {
-        stompClient.debug = () => {
-        };
+        stompClient.debug = () => {};
       }
-      stompClient.connect({}, () => {
-        topics.forEach(topic => {
-          webSocketSubscribeTopic(topic, callbackMessage);
-        });
-        log(`WebSocket: Connected to ${url}`, true);
-        resolve(true);
-      })
+      stompClient.connect(
+        {},
+        () => {
+          topics.forEach(topic => {
+            webSocketSubscribeTopic(topic, callbackMessage);
+          });
+          log(`WebSocket: Connected to ${url}`, true);
+          resolve(true);
+        }
+      );
     } catch (e) {
       log(`WebSocket: Can\'t connect ${e}`, false);
       reject(false);
     }
-  })
+  });
 };
 
 /**
@@ -90,7 +91,6 @@ export const webSocketConnect = (url: string, topics: Array<string>, callbackMes
  * @return {boolean}
  */
 export const webSocketStatus = (): boolean => {
-
   if (stompClient) {
     if (socket.readyState === 3 && !stompClient.connected) {
       log('WebSocket: Connection closed', false);
@@ -113,7 +113,7 @@ export const webSocketStatus = (): boolean => {
 export const webSocketSubscribeTopics = (topics: Array<string>, callbackMessage: any) => {
   topics.forEach(topic => {
     webSocketSubscribeTopic(topic, callbackMessage);
-  })
+  });
 };
 
 /**
@@ -153,7 +153,7 @@ export const webSocketUnsubscribeTopic = (topic: string): boolean => {
       }
     }
   }
-  log('WebSocket: Message not sent!. Can\'t reach/Not connected', false);
+  log("WebSocket: Message not sent!. Can't reach/Not connected", false);
   return false;
 };
 
@@ -167,7 +167,7 @@ export const webSocketUnsubscribeTopic = (topic: string): boolean => {
  */
 export const webSocketSendMessage = (message: string, topic: string): boolean => {
   if (stompClient) {
-    stompClient.send(topic, {}, JSON.stringify({message}));
+    stompClient.send(topic, {}, JSON.stringify({ message }));
     log(`WebSocket: Message ${message}, sent to topic ${topic}`, true);
     return true;
   }
@@ -204,10 +204,10 @@ export const webSocketclose = (): boolean => {
       log('WebSocket: Disconnected', true);
       return true;
     });
-    log('WebSocket: Can\'t disconnect', false);
+    log("WebSocket: Can't disconnect", false);
     return false;
   } else {
-    log('WebSocket: Can\'t disconnect', false);
+    log("WebSocket: Can't disconnect", false);
     return false;
   }
 };
@@ -223,4 +223,4 @@ const log = (logMessage: string, info: boolean) => {
       console.error(logMessage);
     }
   }
-}
+};
