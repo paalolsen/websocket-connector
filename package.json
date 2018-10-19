@@ -1,7 +1,7 @@
 {
   "name": "websocket-connctor",
   "version": "3.0.0",
-  "description": "Functions for handling websocket connection. Uses socksjs-client and stompjs, and also includes a optional React Wrapper",
+  "description": "Functions for handling websocket connection. Uses socksjs-client and stompjs",
   "files": [
     "es6",
     "src"
