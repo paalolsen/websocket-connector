@@ -224,7 +224,7 @@ public class WebSocketClient {
 
     public void postMessage(WebSocketMessage message) {
         if (message.getTopic() == null) {
-            this.template.convertAndSend(WebSocketTopics.TOPIC_GENERAL_INFO, message);
+            this.template.convertAndSend('/topic/general/info', message);
         } else {
             this.template.convertAndSend(message.getTopic(), message);
         }
@@ -241,15 +241,15 @@ public class Testings {
      @Autowired
      private WebSocketClient webSocketClient;
      
-     // Plain text
-     public void sendMessage(String message) {
-         webSocketClient.messageTopic('/topic/general/info', message);
+     public void doSomething() {
+         
+         // A) send message
+         webSocketClient.messageTopic('Sometext', '/topic/general');
+         // B) send message with data/object
+         webSocketClient.messageTopic('Sometext', '/topic/general', new SomePojo('value1','value2'));
+         
+         // Or use postMessage(WebSocketMessage message) directly
      }
-     
-     // Some pojo object
-     public void sendObject(Object someObject) {
-              webSocketClient.messageTopic('/topic/general/info', object);
-          }
 }
  
 ```
