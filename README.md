@@ -9,7 +9,7 @@ An example for using Spring Boot as a backend is provided in the bottom of this 
 This connects to the same localhost, and subscribes to 2 topics: /topic/general/info and /topic/general/error
 
 ````
-import {closeWebSocket, connectWebSocket, statusWebSocket} from 'websockeet-connector';
+import {webSocketClose, webSocketConnect, webSocketStatus} from 'websockeet-connector';
 
 // 1) Create a callback to be able to handle each message received
 const messageHandler = (message: string, topic: string ) => {
@@ -17,24 +17,24 @@ const messageHandler = (message: string, topic: string ) => {
 }
 
 // 2) Create a connection to the backend WebSocket (/yourApplication) and register topics
-connectToWebSocket = () => {
-    connectWebSocket('/yourApplication', ['/topic/general/info', '/topic/general/error'], this.messageHandler)
+webSocketConnect = () => {
+    webSocketConnect('/yourApplication', ['/topic/general/info', '/topic/general/error'], this.messageHandler)
       .then(() => { /* Inform connection is OK */)})
       .catch(()=> { /* Inform connection FAILED*/  })
       
 // 3) If you want to send a message to the backend WebSocket; using /app/ping as backend example entrypoint
-sendMessage('Message to be sent', '/app/ping');
+webSocketSendMessage('Message to be sent', '/app/ping');
 // or as an object
-sendMessage({message: 'someData}, '/app/ping');
+webSocketSendObject({message: 'someData}, '/app/ping');
       
 
 // 4) To subscripbe to more topics or unsubscribe, use the following:
-subscribeTopic(['/topic/general/status'],this.getMessage);
-subscribeTopics(['/topic/general/status', '/topic/other/info'],this.getMessage);
-unsubscribeTopic('/topic/other/info');
+webSocketSubscribeTopic(['/topic/general/status'],this.getMessage);
+webSocketSubscribeTopics(['/topic/general/status', '/topic/other/info'],this.getMessage);
+webSocketUnsubscribeTopic('/topic/other/info');
 
-// 5) To disconnect use the closeWebSocket
-closeWebSocket();
+// 5) To disconnect use the webSocketClose
+webSocketClose();
 
 ````
 
@@ -43,7 +43,7 @@ This can be seated at Root.jsx as a common service, and then use the regular jav
 
 ````
 import * as React from 'react';
-import {closeWebSocket, connectWebSocket, statusWebSocket} from 'websockets'
+import {webSocketClose, webSocketConnect, webSocketStatus} from 'websockets'
 
 // Consider adding a Prop funtion to pass inn, and handle message outside component
 interface Props {
@@ -58,7 +58,7 @@ class WebSocket extends React.Component<Props> {
 
   componentDidMount() {
 
-    this.connectToWebSocket()
+    this.createWebSocketConnection()
 
     setTimeout(() => {
       this.checkIsConnected();
@@ -66,15 +66,15 @@ class WebSocket extends React.Component<Props> {
 
   }
   componentWillUnmount() {
-    closeWebSocket();
+    webSocketClose();
   }
 
   checkIsConnected = () => {
     const {reconnect} = this.props;
     if(reconnect) {
       setInterval(() => {
-       if(!statusWebSocket()) {
-         this.connectToWebSocket();
+       if(!webSocketStatus()) {
+         this.createWebSocketConnection();
        }
       }, 5000);
     }
@@ -84,9 +84,9 @@ class WebSocket extends React.Component<Props> {
     // Hanlde message here, or expand Props to take a similiar function and handle outside component
   }
 
-  connectToWebSocket = () => {
+  createWebSocketConnection = () => {
     console.log('Lytter på topics: /topic/general/info, /topic/general/error');
-    connectWebSocket('/gpf-handelslager/handler', ['/topic/general/info', '/topic/general/error'], this.getMessage)
+    webSocketConnect('/gpf-handelslager/handler', ['/topic/general/info', '/topic/general/error'], this.getMessage)
       .then(() => { /* Inform Connection OK */ })
       .catch(()=> { /* Inform Connection Failed*/ })
   }
@@ -156,9 +156,20 @@ public class WebSocketController {
     @SendTo("/topic/general/info")
     public Map<String, String> ping(@Payload Map<String, String> message) {
         message.put("timestamp", Long.toString(System.currentTimeMillis()));
-        message.put("topic", "/topic/general/status");
+        message.put("topic", "/topic/general/info");
         return message;
     }
+    
+    /* Or:
+   
+       @MessageMapping(WebSocketTopics.PING)
+        @SendTo(WebSocketTopics.TOPIC_GENERAL_INFO)
+        public WebSocketMessage ping(@Payload WebSocketMessage message) {
+            message.setTopic(WebSocketTopics.TOPIC_GENERAL_INFO);
+            message.setMessage(message.getMessage() + " <- Received in backend");
+            return message;
+        }
+    */
 }
 
 ````

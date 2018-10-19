@@ -1,6 +1,7 @@
 import * as Stomp from 'stompjs';
-const SockJS = require('sockjs-client');
-import { Client, Frame } from 'stompjs';
+import {Client, Frame} from 'stompjs';
+
+const SockJS = require('sockjs-client')
 
 /**
  * WebSocket: send and receive messages using sockjs-client and stompjs
@@ -10,7 +11,7 @@ import { Client, Frame } from 'stompjs';
  * Usage:
  *    (1) IMPORT
  *
- *      import { sendMessage, subscribeTopics, connectToWebSocket} from 'websocketmodule'
+ *      import { webSocketSendMessage, webSocketSubscribeTopics, connectToWebSocket} from 'websocketmodule'
  *
  *    (2) CREATE CONNECTION -> runs callback for each message received from backend on respective topic
  *
@@ -21,20 +22,20 @@ import { Client, Frame } from 'stompjs';
  *
  *    (3) CLOSE CONNECITON
  *
- *      closeWebSocket();
+ *      webSocketclose();
  *
  *    (4) Optional: SEND MESSAGE -> MessageMapping /app/ping as an example here, and should be handled in backend and distribute to correct topic ('/topic/status' ?)
  *
- *       sendMessage('This is a textsamle', '/app/ping');
+ *       webSocketSendMessage('This is a textsamle', '/app/ping');
  *
  *    (5) Optional: SUBSCRIBE to new/more TOPIC(-s) -> runs callback for each message received on topic
  *
  *      const yourCallback = (message: string, topic: string) => { ... show/use message +/- topic ... };
- *      subscribeTopics(["/topic/testing"], () => yourCallback);
+ *      webSocketSubscribeTopics(["/topic/testing"], () => yourCallback);
  *
  *    (6) Optional: UNSUBSCRIBE to a TOPIC
  *
- *      unsubscribeTopic(["/topic/testing"]);
+ *      webSocketUnsubscribeTopic(["/topic/testing"]);
  */
 
 let socket: any | undefined = undefined;
@@ -55,33 +56,32 @@ let debugFlag: boolean = false;
  * @return {Promise}
  * @
  */
-export const connectWebSocket = (url: string, topics: Array<string>, callbackMessage: any, debug: boolean = false) => {
+export const webSocketConnect = (url: string, topics: Array<string>, callbackMessage: any, debug: boolean = false) => {
+
   debugFlag = debug;
 
   return new Promise((resolve, reject) => {
     try {
-      statusWebSocket();
+      webSocketStatus();
       socket = new SockJS(url);
       stompClient = Stomp.over(socket);
 
       if (!debugFlag) {
-        stompClient.debug = () => {};
+        stompClient.debug = () => {
+        };
       }
-      stompClient.connect(
-        {},
-        () => {
-          topics.forEach(topic => {
-            subscribeTopic(topic, callbackMessage);
-          });
-          log(`WebSocket: Connected to ${url}`, true);
-          resolve(true);
-        }
-      );
+      stompClient.connect({}, () => {
+        topics.forEach(topic => {
+          webSocketSubscribeTopic(topic, callbackMessage);
+        });
+        log(`WebSocket: Connected to ${url}`, true);
+        resolve(true);
+      })
     } catch (e) {
       log(`WebSocket: Can\'t connect ${e}`, false);
       reject(false);
     }
-  });
+  })
 };
 
 /**
@@ -89,12 +89,13 @@ export const connectWebSocket = (url: string, topics: Array<string>, callbackMes
  *
  * @return {boolean}
  */
-export const statusWebSocket = (): boolean => {
+export const webSocketStatus = (): boolean => {
+
   if (stompClient) {
-    if (socket.readyState == 3 && !stompClient.connected) {
+    if (socket.readyState === 3 && !stompClient.connected) {
       log('WebSocket: Connection closed', false);
       return false;
-    } else if (socket.readyState == 1 && stompClient.connected) {
+    } else if (socket.readyState === 1 && stompClient.connected) {
       log('WebSocket: Connected', true);
       return true;
     }
@@ -109,10 +110,10 @@ export const statusWebSocket = (): boolean => {
  * @param {Array<string} topics       Example: ['/topic/status'] or ['/topic/status', '/topic/error']
  * @param {callback} callbackMessage  Example:  (message: string, topic: string) => {...handle}
  */
-export const subscribeTopics = (topics: Array<string>, callbackMessage: any) => {
+export const webSocketSubscribeTopics = (topics: Array<string>, callbackMessage: any) => {
   topics.forEach(topic => {
-    subscribeTopic(topic, callbackMessage);
-  });
+    webSocketSubscribeTopic(topic, callbackMessage);
+  })
 };
 
 /**
@@ -121,9 +122,9 @@ export const subscribeTopics = (topics: Array<string>, callbackMessage: any) => 
  * @param string topic                Example: ['/topic/status'] or ['/topic/status', '/topic/error']
  * @param {callback} callbackMessage  Example:  (message: string, topic: string) => {...handle}
  */
-export const subscribeTopic = (topic: string, callbackMessage: any) => {
+export const webSocketSubscribeTopic = (topic: string, callbackMessage: any) => {
   if (stompClient) {
-    let subscriptionID: string = stompClient.subscribe(topic, (frame: Frame) => {
+    const subscriptionID: string = stompClient.subscribe(topic, (frame: Frame) => {
       const body = JSON.parse(frame.body);
       const message = body;
       const topic = body.topic;
@@ -141,7 +142,7 @@ export const subscribeTopic = (topic: string, callbackMessage: any) => {
  * @param {string} topic            Example: '/topic/status'
  * @return {boolean}                Returns true/false if topic is deleted
  */
-export const unsubscribeTopic = (topic: string): boolean => {
+export const webSocketUnsubscribeTopic = (topic: string): boolean => {
   if (stompClient) {
     if (subscriptions.get(topic)) {
       const subscriptionID = subscriptions.get(topic);
@@ -152,7 +153,7 @@ export const unsubscribeTopic = (topic: string): boolean => {
       }
     }
   }
-  log('WebSocket: Message not sent!. Not able to connect', false);
+  log('WebSocket: Message not sent!. Can\'t reach/Not connected', false);
   return false;
 };
 
@@ -164,50 +165,56 @@ export const unsubscribeTopic = (topic: string): boolean => {
  *
  * @return {boolean}                  Returns true/false if message is sent
  */
-export const sendMessage = (message: string, topic: string): boolean => {
-  return sendMessageObject({ message: message }, topic);
-};
-
-/**
- * WebSocket: Send Message Object to a single topic
- *
- * @param {Object} message            Example: Use a format for the backend -> { one: 'sometext, two: 'some other text}
- * @param {string} topic              Example:  '/topic/status'
- *
- * @return {boolean}                  Returns true/false if message is sent
- */
-export const sendMessageObject = (message: Object, topic: string) => {
+export const webSocketSendMessage = (message: string, topic: string): boolean => {
   if (stompClient) {
-    stompClient.send(topic, {}, JSON.stringify(message));
+    stompClient.send(topic, {}, JSON.stringify({message}));
     log(`WebSocket: Message ${message}, sent to topic ${topic}`, true);
     return true;
   }
   log('WebSocket: Message not sent!. Can not reach/Not connected', false);
   return false;
-}
+};
+
+/**
+ * WebSocket: Send Message Object to a single topic
+ *
+ * @param {object} message            Example: {message: 'sometext', topic: '/topic/sometopic}
+ * @param {string} topic              Example:  '/topic/status'
+ *
+ * @return {boolean}                  Returns true/false if message is sent
+ */
+export const webSocketSendObject = (obj: object, topic: string): boolean => {
+  if (stompClient) {
+    stompClient.send(topic, {}, JSON.stringify(obj));
+    log(`WebSocket: Message Object ${obj.toString()}, sent to topic ${topic}`, true);
+    return true;
+  }
+  log('WebSocket: Message Object not sent!. Can not reach/Not connected', false);
+  return false;
+};
 
 /**
  * WebSocket: Close connection
  *
  * @return {boolean}                    Returns true/false if connection is closed
  */
-export const closeWebSocket = (): boolean => {
+export const webSocketclose = (): boolean => {
   if (stompClient) {
     stompClient.disconnect(() => {
       log('WebSocket: Disconnected', true);
       return true;
     });
-    log('WebSocket: Not able to disconnect', false);
+    log('WebSocket: Can\'t disconnect', false);
     return false;
   } else {
-    log('WebSocket: Not able to disconnect', false);
+    log('WebSocket: Can\'t disconnect', false);
     return false;
   }
 };
 
 /**
  * Internal handling of logging, if debugFlag is set to true
- * */
+ */
 const log = (logMessage: string, info: boolean) => {
   if (debugFlag) {
     if (info) {
@@ -216,4 +223,4 @@ const log = (logMessage: string, info: boolean) => {
       console.error(logMessage);
     }
   }
-};
+}

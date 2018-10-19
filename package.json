@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "prettier": "prettier --write --parser typescript src/**/*.{ts,tsx}",
-    "lint": "eslint {src,test}/**/*.{ts,tsx}",
+    "lint": "tslint 'src/**/*.ts{,x}' -t stylish",
     "precommit": "npm run lint",
     "prepare": "npm run clean && npm run build",
     "clean": "rimraf es6",
@@ -24,14 +24,15 @@
   "devDependencies": {
     "@types/sockjs-client": "^1.1.0",
     "@types/stompjs": "^2.3.4",
-    "eslint": "5.5.0",
-    "eslint-config-prettier": "3.0.1",
-    "eslint-plugin-prettier": "2.6.2",
     "prettier": "1.14.2",
     "react": "^16.5.2",
     "rimraf": "2.6.2",
     "sockjs-client": "^1.3.0",
     "stompjs": "^2.3.3",
+    "tslint": "5.9.1",
+    "tslint-config-prettier": "1.10.0",
+    "tslint-loader": "3.6.0",
+    "tslint-react": "3.5.1",
     "typescript": "3.0.3",
     "typescript-eslint-parser": "18.0.0"
   },
