@@ -1,7 +1,6 @@
-import * as Stomp from 'stompjs';
-import { Client, Frame } from 'stompjs'; // tslint:disable-line
+import {Client, Frame, over as StompOver} from 'stompjs';
 
-const SockJS = require('sockjs-client'); // tslint:disable-line
+const SockJS = require('sockjs-client')
 
 /**
  * WebSocket: send and receive messages using sockjs-client and stompjs
@@ -38,10 +37,10 @@ const SockJS = require('sockjs-client'); // tslint:disable-line
  *      webSocketUnsubscribeTopic(["/topic/testing"]);
  */
 
-let socket: any | undefined = undefined; // tslint:disable-line
-let stompClient: Client | undefined = undefined; // tslint:disable-line
+let socket: any | undefined;
+let stompClient: Client | undefined;
 
-let subscriptions: Map<string, string> = new Map<string, string>(); // tslint:disable-line
+const subscriptions: Map<string, string> = new Map<string, string>();
 
 let debugFlag: boolean = false;
 
@@ -57,32 +56,30 @@ let debugFlag: boolean = false;
  * @
  */
 export const webSocketConnect = (url: string, topics: string[], callbackMessage: any, debug: boolean = false) => {
+
   debugFlag = debug;
 
   return new Promise((resolve, reject) => {
     try {
       webSocketStatus();
       socket = new SockJS(url);
-      stompClient = Stomp.over(socket);
+      stompClient = StompOver(socket);
 
       if (!debugFlag) {
-        stompClient.debug = () => {}; // tslint:disable-line
+        stompClient.debug = () => {}; // tslint:disable-line no-empty
       }
-      stompClient.connect(
-        {},
-        () => {
-          topics.forEach(topic => {
-            webSocketSubscribeTopic(topic, callbackMessage);
-          });
-          log(`WebSocket: Connected to ${url}`, true);
-          resolve(true);
-        }
-      );
+      stompClient.connect({}, () => {
+        topics.forEach(topic => {
+          webSocketSubscribeTopic(topic, callbackMessage);
+        });
+        log(`WebSocket: Connected to ${url}`, true);
+        resolve(true);
+      })
     } catch (e) {
       log(`WebSocket: Can\'t connect ${e}`, false);
       reject(false);
     }
-  });
+  })
 };
 
 /**
@@ -91,6 +88,7 @@ export const webSocketConnect = (url: string, topics: string[], callbackMessage:
  * @return {boolean}
  */
 export const webSocketStatus = (): boolean => {
+
   if (stompClient) {
     if (socket.readyState === 3 && !stompClient.connected) {
       log('WebSocket: Connection closed', false);
@@ -113,7 +111,7 @@ export const webSocketStatus = (): boolean => {
 export const webSocketSubscribeTopics = (topics: string[], callbackMessage: any) => {
   topics.forEach(topic => {
     webSocketSubscribeTopic(topic, callbackMessage);
-  });
+  })
 };
 
 /**
@@ -126,8 +124,9 @@ export const webSocketSubscribeTopic = (topic: string, callbackMessage: any) => 
   if (stompClient) {
     const subscriptionID: string = stompClient.subscribe(topic, (frame: Frame) => {
       const body = JSON.parse(frame.body);
+      const message = body;
 
-      callbackMessage(body, body.topic);
+      callbackMessage(message, body.topic);
     }).id;
     subscriptions.set(topic, subscriptionID);
     log(`WebSocket: Subscribed to topic ${topic}`, true);
@@ -151,7 +150,7 @@ export const webSocketUnsubscribeTopic = (topic: string): boolean => {
       }
     }
   }
-  log("WebSocket: Message not sent!. Can't reach/Not connected", false);
+  log('WebSocket: Message not sent!. Can\'t reach/Not connected', false);
   return false;
 };
 
@@ -165,7 +164,7 @@ export const webSocketUnsubscribeTopic = (topic: string): boolean => {
  */
 export const webSocketSendMessage = (message: string, topic: string): boolean => {
   if (stompClient) {
-    stompClient.send(topic, {}, JSON.stringify({ message }));
+    stompClient.send(topic, {}, JSON.stringify({message}));
     log(`WebSocket: Message ${message}, sent to topic ${topic}`, true);
     return true;
   }
@@ -202,10 +201,10 @@ export const webSocketclose = (): boolean => {
       log('WebSocket: Disconnected', true);
       return true;
     });
-    log("WebSocket: Can't disconnect", false);
+    log('WebSocket: Can\'t disconnect', false);
     return false;
   } else {
-    log("WebSocket: Can't disconnect", false);
+    log('WebSocket: Can\'t disconnect', false);
     return false;
   }
 };
@@ -221,4 +220,4 @@ const log = (logMessage: string, info: boolean) => {
       console.error(logMessage);
     }
   }
-};
+}
